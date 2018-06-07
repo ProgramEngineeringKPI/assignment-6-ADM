@@ -7,7 +7,7 @@ int partition_first(vector<flat*>& arr, int f, int l, int axis){
   int i = f - 1;
   flat* x = arr[l];
   for (int j = f; j < l; j++){
-    if (arr[j] -> min_p -> coor[axis] <= x-> min_p -> coor[axis]){
+    if (arr[j] -> min_p -> coordinate(axis) <= x-> min_p -> coordinate(axis)){
       i++;
       flat* swap = arr[i];
       arr[i] = arr[j];

@@ -6,8 +6,8 @@
 using namespace std;
 
 DisplayControl::DisplayControl(
-        vector<double> &min,
-        vector<double> &max,
+        Point &min,
+        Point &max,
         string resolution
 ) {
     width = 1;
@@ -16,13 +16,13 @@ DisplayControl::DisplayControl(
     widthPx = 500;
     heightPx = 500;
 
-    vector<double> empty(3, 0);
+    Point empty;
     camera = empty;
     camera[0] = 0;
     camera[1] = 2;
     camera[2] = 0;
 
-    vector<vector<double>> empty2(2, empty);
+    vector<Point> empty2(2, empty);
     canvas = empty2;
     canvas[0][0] = -0.5;
     canvas[0][1] = 1;

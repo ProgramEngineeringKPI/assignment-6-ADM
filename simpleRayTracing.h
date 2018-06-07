@@ -6,19 +6,20 @@
 #include "DisplayControl.h"
 #include "bitmap_image.hpp"
 #include "flat.h"
+#include "Vector.h"
 
 using namespace std;
 
 void simpleRayTracing(
                 DisplayControl*,
-                vector<double>&,
-                vector<double>&,
-                vector<vector<double>>&,
+                Point&,
+                Point&,
+                vector<Point>&,
                 vector<vector<int>>&,
                 bitmap_image*
 );
 
-vector<flat*> createFlatArray(vector<vector<double>>&, vector<vector<int>>&);
+vector<flat*> createFlatArray(vector<Point>&, vector<vector<int>>&);
 
 //bool rayIntersectTriangle(
 //                vector<double>&,
@@ -28,8 +29,8 @@ vector<flat*> createFlatArray(vector<vector<double>>&, vector<vector<int>>&);
 //);
 
 bool rayIntersectTriangle(
-        vector<double>&,
-        vector<double>&,
+        Vector&,
+        Vector&,
         flat*
 );
 

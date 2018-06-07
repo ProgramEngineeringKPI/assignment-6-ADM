@@ -1,13 +1,13 @@
 #ifndef ASSIGNMENT_6_ADM_PARSEOBJ_H
 #define ASSIGNMENT_6_ADM_PARSEOBJ_H
 
-
+#include "Vector.h"
 #include <vector>
 
 void readObj(char*,
-             std::vector<double>&,
-             std::vector<double>&,
-             std::vector<std::vector<double>>*,
+             Point&,
+             Point&,
+             std::vector<Point>*,
              std::vector<std::vector<int>>*
 );
 

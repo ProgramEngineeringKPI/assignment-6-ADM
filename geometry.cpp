@@ -1,28 +1,18 @@
 #include "geometry.h"
 
-vector<double> add(vector<double>& v1, vector<double>& v2) {
-    vector<double> res;
-    for (int i = 0 ; i < 3 ; i++) res.push_back(v1[i] + v2[i]);
-    return res;
+double dotProduct(Point& v1, Point& v2) {
+  double res = 0;
+  res += v1.x*v2.x;
+  res += v1.y*v2.y;
+  res += v1.z*v2.z;
+  return res;
 };
 
-vector<double> subtract(vector<double>& v1, vector<double> v2) {
-    vector<double> res;
-    for (int i = 0 ; i < 3 ; i++) res.push_back(v1[i] - v2[i]);
-    return res;
-};
-
-double dotProduct(vector<double>& v1, vector<double>& v2) {
-    double res = 0;
-    for (int i = 0 ; i < 3 ; i++) res += v1[i]*v2[i];
-    return res;
-};
-
-vector<double> crossProduct(vector<double>& v1, vector<double>& v2) {
-    vector<double> res;
-    res.push_back(v1[1]*v2[2] - v1[2]*v2[1]);
-    res.push_back(v1[2]*v2[0] - v1[0]*v2[2]);
-    res.push_back(v1[0]*v2[1] - v1[1]*v2[0]);
+Vector crossProduct(Vector& v1, Vector& v2) {
+    Vector res;
+    res.x = v1.y*v2.z - v1.z*v2.y;
+    res.y = v1.z*v2.x - v1.x*v2.z;
+    res.z = v1.x*v2.y - v1.y*v2.x;
     return res;
 };
 
@@ -32,57 +22,49 @@ void swap_(float* el1, float* el2){
   *el2 = swap;
 }
 
-float ray_in_box(point* A, point* B, point* min, point* max){
+float ray_in_box(Point* A, Point* B, Point* min, Point* max){
 
-  float x0 = min -> coor[0];
-  float y0 = min -> coor[1];
-  float z0 = min -> coor[2];
+  float x0 = min->x;
+  float y0 = min->y;
+  float z0 = min->z;
 
-  float x1 = max -> coor[0];
-  float y1 = max -> coor[1];
-  float z1 = max -> coor[2];
+  float x1 = max->x;
+  float y1 = max->y;
+  float z1 = max->z;
 
-  float x = A -> coor[0];
-  float y = A -> coor[1];
-  float z = A -> coor[2];
+  float x = A->x;
+  float y = A->y;
+  float z = A->z;
 
-  point* vector = new point(0,0,0);
-
+  Vector vector;
 
   float swap;
   float len = 0;
 
-  for (int i = 0; i < 3; i++){
-    vector -> coor[i] = B -> coor[i] - A -> coor[i];
-    len += ((vector -> coor[i])*(vector -> coor[i]));
-  }
 
-  len = sqrt(len);
-
-  for (int i = 0; i < 3; i++){
-    vector -> coor[i] /= len;
-  }
+  vector = (B - A);
+  vector = vector.normalized();
 
   float Tnear = - INT_MAX;
   float Tfar = INT_MAX;
 
-  if (vector -> coor[0] == 0){
+  if (vector.x == 0){
     if (x > x1 || x < x0){
       return INT_MAX;
     }
   } else {
-    Tnear = (x0 - x) / vector -> coor[0];
-    Tfar = (x1 - x) / vector -> coor[0];
+    Tnear = (x0 - x) / vector.x;
+    Tfar = (x1 - x) / vector.x;
     if (Tnear > Tfar) swap_(&Tnear, &Tfar);
   }
 
-  if (vector -> coor[1] == 0){
+  if (vector.y == 0){
     if (y > y1 || y < y0){
       return INT_MAX;
     }
   } else {
-    float T1y = (y0 - y) / vector -> coor[1];
-    float T2y = (y1 - y) / vector -> coor[1];
+    float T1y = (y0 - y) / vector.y;
+    float T2y = (y1 - y) / vector.y;
 
     if (T1y > T2y) swap_(&T1y, &T2y);
     if (T1y > Tnear) Tnear = T1y;
@@ -91,13 +73,13 @@ float ray_in_box(point* A, point* B, point* min, point* max){
 
   if (Tnear > Tfar || Tfar < 0) return INT_MAX;
 
-  if (vector -> coor[2] == 0){
+  if (vector.z == 0){
     if (z > z1 || z < z0){
       return INT_MAX;
     }
   } else {
-    float T1z = (z0 - z) / vector -> coor[2];
-    float T2z = (z1 - z) / vector -> coor[2];
+    float T1z = (z0 - z) / vector.z;
+    float T2z = (z1 - z) / vector.z;
 
     if (T1z > T2z) swap_(&T1z, &T2z);
     if (T1z > Tnear) Tnear = T1z;
@@ -118,7 +100,7 @@ int SAH(vector<flat*> elms, float min, float max, int axis){
   quick_sort_first(elms, 0, elms.size() - 1, axis);
   int curr;
   for (int i = 0; i < count; i++){
-    curr = (elms[i] -> min_p -> coor[axis] - min)*i + (max - elms[i] -> max_p -> coor[axis])*(count - i);
+    curr = (elms[i] -> min_p -> coordinate(axis) - min)*i + (max - elms[i] -> max_p -> coordinate(axis))*(count - i);
     if (curr < result){
       result = curr;
       answer = i;

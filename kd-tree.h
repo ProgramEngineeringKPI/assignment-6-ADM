@@ -8,18 +8,19 @@
 #include <unistd.h>
 #include "sort.h"
 #include "geometry.h"
+#include "Vector.h"
 
 using namespace std;
 
 struct node{
   int axis;
-  point* min;
-  point* max;
+  Point* min;
+    Point* max;
   vector<flat*> elements;
   float delimiter;
   node* left;
   node* right;
-  node (int a, point* _min, point* _max){
+  node (int a, Point* _min, Point* _max){
     axis = a;
     min = _min;
     max = _max;
@@ -30,6 +31,6 @@ struct node{
 
 void build_tree(vector<flat*>, node*, int, int*);
 
-vector<flat*> search_in_tree(point*, point*, node*);
+vector<flat*> search_in_tree(Point*, Point*, node*);
 
 #endif //ASSIGNMENT_6_ADM_KD_TREE_H

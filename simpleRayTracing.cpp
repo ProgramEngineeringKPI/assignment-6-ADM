@@ -8,14 +8,14 @@ using namespace std;
 
 void simpleRayTracing(
         DisplayControl* dc,
-        vector<double> &min,
-        vector<double> &max,
-        vector<vector<double>>& vertexes,
+        Point &min,
+        Point &max,
+        vector<Point>& vertexes,
         vector<vector<int>>& figures,
         bitmap_image* bmp
 ) {
-    auto min_ = new point(min[0], min[1], min[2]);
-    auto max_ = new point(max[0], max[1], max[2]);
+    Point* min_ = &min;
+    Point* max_ = &max;
     node* root = new node(0, min_, max_);
     vector<flat*> v = createFlatArray(vertexes, figures);
 
@@ -33,23 +33,20 @@ void simpleRayTracing(
     z = dc->canvas[1][2];
 
     dx = dc->dx; dy = dc->dy; dz = dc->dz;
-    auto camera = new point(dc->camera[0], dc->camera[1], dc->camera[2]);
+    Point camera = dc->camera;
 
     for (int i = 0 ; i < dc->heightPx ; i++) {
         double curX = x; double curY = y;
         for (int j = 0 ; j < dc->widthPx ; j++) {
             curX += dx; curY += dy;
-            auto curP = new point(curX, curY, z);
+            Point curP(curX, curY, z);
             vector<flat*> resFlats;
 
-            if(ray_in_box(camera, curP, root -> min, root -> max)!= INT_MAX){
-               resFlats = search_in_tree(camera, curP, root);
+            if(ray_in_box(&camera, &curP, root -> min, root -> max)!= INT_MAX){
+               resFlats = search_in_tree(&camera, &curP, root);
             }
 
-            vector<double> curPoint(3, 0);
-            curPoint[0] = curX;
-            curPoint[1] = curY;
-            curPoint[2] = z;
+            Point curPoint(curX, curY,z);
 
             for (int k = 0 ; k < resFlats.size() ; k++) {
                 if (rayIntersectTriangle(dc->camera, curPoint, resFlats[k])) {
@@ -76,57 +73,50 @@ void simpleRayTracing(
     }
 }
 
-vector<flat*> createFlatArray(vector<vector<double>> &vertices,
+vector<flat*> createFlatArray(vector<Point> &vertices,
                               vector<vector<int>> &flats)
 {
     vector<flat*> elements(flats.size(), nullptr);
     for (int i = 0 ; i < flats.size() ; i++) {
-        elements[i] = new flat(
-                new point(vertices[flats[i][0]][0],
-                          vertices[flats[i][0]][1],
-                          vertices[flats[i][0]][2]),
-                new point(vertices[flats[i][1]][0],
-                          vertices[flats[i][1]][1],
-                          vertices[flats[i][1]][2]),
-                new point(vertices[flats[i][2]][0],
-                          vertices[flats[i][2]][1],
-                          vertices[flats[i][2]][2])
-        );
+        Point p1(vertices[flats[i][0]][0],
+                 vertices[flats[i][0]][1],
+                 vertices[flats[i][0]][2]);
+        Point p2(vertices[flats[i][1]][0],
+                 vertices[flats[i][1]][1],
+                 vertices[flats[i][1]][2]);
+        Point p3(vertices[flats[i][2]][0],
+                 vertices[flats[i][2]][1],
+                 vertices[flats[i][2]][2]);
+        elements[i] = new flat(&p1,&p2,&p3);
     }
     return elements;
 }
 
 
 bool rayIntersectTriangle(
-        vector<double> &rayOrigin,
-        vector<double> &rayVector,
+        Vector &rayOrigin,
+        Vector &rayVector,
         flat* triangle
 ) {
     const double E = 0.0000001;
-    vector<double> vertex0(3, 0);
-    vector<double> vertex1(3, 0);
-    vector<double> vertex2(3, 0);
+    Point vertex0 = *triangle->p1;
+    Point vertex1 = *triangle->p2;
+    Point vertex2 = *triangle->p3;
 
-    for (int i = 0 ; i < 3 ; i++) {
-        vertex0[i] = triangle->p1->coor[i];
-        vertex1[i] = triangle->p2->coor[i];
-        vertex2[i] = triangle->p3->coor[i];
-    }
+    Vector edge1 = vertex1 - vertex0;
+    Vector edge2 = vertex2 - vertex0;
+    Vector dir = rayVector - rayOrigin;
 
-    vector<double> edge1 = subtract(vertex1, vertex0);
-    vector<double> edge2 = subtract(vertex2, vertex0);
-    vector<double> dir = subtract(rayVector, rayOrigin);
-
-    vector<double> h = crossProduct(dir, edge2);
+    Vector h = crossProduct(dir, edge2);
     double a = dotProduct(edge1, h);
     if (a > -E && a < E) return false;
 
     double f = 1/a;
-    vector<double> s = subtract(rayOrigin, vertex0);
+    Vector s = rayOrigin - vertex0;
     double u = f * dotProduct(s, h);
     if (u < 0 || u > 1) return false;
 
-    vector<double> q = crossProduct(s, edge1);
+    Vector q = crossProduct(s, edge1);
     double v = f * dotProduct(dir, q);
     if (v < 0 || u + v > 1) return false;
 

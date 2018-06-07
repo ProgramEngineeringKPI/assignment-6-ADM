@@ -3,14 +3,15 @@
 
 #include <vector>
 #include <string>
+#include "Vector.h"
 
 using namespace std;
 
 class DisplayControl {
 public:
-    DisplayControl(vector<double>&, vector<double>&, string);
-    vector<double> camera;
-    vector<vector<double>> canvas;
+    DisplayControl(Point&, Point&, string);
+    Point camera;
+    vector<Point> canvas;
     unsigned int widthPx;
     unsigned int heightPx;
     double width;

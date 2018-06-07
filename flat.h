@@ -2,44 +2,30 @@
 #define ASSIGNMENT_6_ADM_FLAT_H
 
 #include <iostream>
+#include "Vector.h"
 
 float comparator(float, float, float, int);
 
-struct point{
-  float *coor = new float[3];
-  point(){
-    coor[0] = 0;
-    coor[1] = 0;
-    coor[2] = 0;
-  }
-  point(float x, float y, float z){
-    coor[0] = x;
-    coor[1] = y;
-    coor[2] = z;
-  }
-  void print(){
-    std::cout << " x: " << coor[0];
-    std::cout << " y: " << coor[1];
-    std::cout << " z: " << coor[2] << std::endl;
-  }
-};
-
 struct flat{
-  point* p1;
-  point* p2;
-  point* p3;
-  point* min_p;
-  point* max_p;
-  flat(point* _p1, point* _p2, point* _p3){
-    min_p = new point();
-    max_p = new point();
+    Point* p1;
+    Point* p2;
+    Point* p3;
+    Point* min_p;
+    Point* max_p;
+    flat(Point* _p1, Point* _p2, Point* _p3){
     p1 = _p1;
     p2 = _p2;
     p3 = _p3;
-    for (int i = 0; i < 3; i++){
-      min_p -> coor[i] = comparator(_p1 -> coor[i], _p2 -> coor[i], _p3 -> coor[i], 0);
-      max_p -> coor[i] = comparator(_p1 -> coor[i], _p2 -> coor[i], _p3 -> coor[i], 1);
-    }
+
+    Point min(comparator(_p1 -> x, _p2 -> x, _p3 -> x, 0),
+              comparator(_p1 -> y, _p2 -> y, _p3 -> y, 0),
+              comparator(_p1 -> z, _p2 -> z, _p3 -> z, 0));
+
+        Point max(comparator(_p1 -> x, _p2 -> x, _p3 -> x, 1),
+                  comparator(_p1 -> y, _p2 -> y, _p3 -> y, 1),
+                  comparator(_p1 -> z, _p2 -> z, _p3 -> z, 1));
+    min_p = &min;
+    max_p = &max;
   }
 };
 

@@ -5,9 +5,9 @@
 using namespace std;
 
 void readObj(char *fileName,
-             vector<double> &minCoords,
-             vector<double> &maxCoords,
-             vector<vector<double>> *vertices,
+             Point &minCoords,
+             Point &maxCoords,
+             vector<Point> *vertices,
              vector<vector<int>> *flats
 ) {
     double minX = 1000, maxX = -1000;
@@ -22,19 +22,19 @@ void readObj(char *fileName,
             objl::Mesh curMesh = Loader.LoadedMeshes[i];
 
             for (int j = 0; j < curMesh.Vertices.size(); j++) {
-                vector<double> curV(3, 0);
-                curV[0] = curMesh.Vertices[j].Position.X;
-                curV[1] = curMesh.Vertices[j].Position.Y;
-                curV[2] = curMesh.Vertices[j].Position.Z;
+                Point curV;
+                curV.x = curMesh.Vertices[j].Position.X;
+                curV.y = curMesh.Vertices[j].Position.Y;
+                curV.z = curMesh.Vertices[j].Position.Z;
 
-                minX = minX < curV[0] ? minX : curV[0];
-                maxX = maxX > curV[0] ? maxX : curV[0];
+                minX = minX < curV.x ? minX : curV.x;
+                maxX = maxX > curV.x ? maxX : curV.x;
 
-                minY = minY < curV[1] ? minY : curV[1];
-                maxY = maxY > curV[1] ? maxY : curV[1];
+                minY = minY < curV.y ? minY : curV.y;
+                maxY = maxY > curV.y ? maxY : curV.y;
 
-                minZ = minZ < curV[2] ? minZ : curV[2];
-                maxZ = maxZ > curV[2] ? maxZ : curV[2];
+                minZ = minZ < curV.z ? minZ : curV.z;
+                maxZ = maxZ > curV.z ? maxZ : curV.z;
 
                 vertices->push_back(curV);
             }
@@ -46,8 +46,8 @@ void readObj(char *fileName,
                 flats->push_back(newIntV);
             }
         }
-        minCoords[0] = minX; minCoords[1] = minY; minCoords[2] = minZ;
-        maxCoords[0] = maxX; maxCoords[1] = maxY; maxCoords[2] = maxZ;
+        minCoords = Point(minX, minY, minZ);
+        maxCoords = Point(maxX, maxY, maxZ);
     } else {
         cout << "Cannot load file: " << fileName << endl;
     }

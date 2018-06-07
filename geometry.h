@@ -7,15 +7,14 @@
 #include "flat.h"
 #include <cmath>
 #include "sort.h"
+#include "Vector.h"
 
 using namespace std;
 
-vector<double> add(vector<double>&, vector<double>&);
-vector<double> subtract(vector<double>&, vector<double>);
-double dotProduct(vector<double>&, vector<double>&);
-vector<double> crossProduct(vector<double>&, vector<double>&);
+double dotProduct(Point& v1, Point& v2);
+Vector crossProduct(Vector&, Vector&);
 void swap_(float*, float*);
-float ray_in_box(point*, point*, point*, point*);
+float ray_in_box(Point*, Point*, Point*, Point*);
 int SAH(vector<flat*>, float, float, int);
 
 
