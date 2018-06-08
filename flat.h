@@ -25,12 +25,14 @@ struct point{
 };
 
 struct flat{
+    int index;
   point* p1;
   point* p2;
   point* p3;
   point* min_p;
   point* max_p;
-  flat(point* _p1, point* _p2, point* _p3){
+  flat(int indx, point* _p1, point* _p2, point* _p3){
+      index = indx;
     min_p = new point();
     max_p = new point();
     p1 = _p1;

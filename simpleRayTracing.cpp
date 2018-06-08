@@ -3,6 +3,7 @@
 #include <cmath>
 #include "kd-tree.h"
 #include "limits.h"
+#include "color.h"
 
 using namespace std;
 
@@ -12,16 +13,17 @@ void simpleRayTracing(
         vector<double> &max,
         vector<vector<double>>& vertexes,
         vector<vector<int>>& figures,
+        vector<vector<double>>& normals,
         bitmap_image* bmp
 ) {
     auto min_ = new point(min[0], min[1], min[2]);
     auto max_ = new point(max[0], max[1], max[2]);
     node* root = new node(0, min_, max_);
-    vector<flat*> v = createFlatArray(vertexes, figures);
+    vector<flat*> v = createFlatArray(vertexes, figures, normals);
 
     int *count = new int;
     *count = 0;
-    build_tree(v, root, 0, count);
+    build_tree(v, root, 0,0, count);
 
 
     cout << "Built " << *count << " nodes" << endl;
@@ -51,10 +53,32 @@ void simpleRayTracing(
             curPoint[1] = curY;
             curPoint[2] = z;
 
+
+            int numberOfNearest = -1;
+            double distance = 10000;
+            vector<double> vect(3,1);
+
+
             for (int k = 0 ; k < resFlats.size() ; k++) {
-                if (rayIntersectTriangle(dc->camera, curPoint, resFlats[k])) {
-                    //cout << "Intersection" << endl;
-                    bmp->set_pixel(j, i, 0, 0, 0);
+                double curDistance = rayIntersectTriangle(
+                        dc->camera,
+                        curPoint,
+                        vertexes,
+                        figures[resFlats[k]->index]);
+                if (curDistance != -1 && curDistance < distance) {
+                    distance = curDistance;
+                    numberOfNearest = resFlats[k]->index;
+                }
+
+                if (numberOfNearest > -1 && distance != 1000) {
+                    int rgb = getColor(
+                            dc->camera,
+                            curPoint,
+                            dc->light,
+                            distance,
+                            normals[numberOfNearest]
+                    );
+                    bmp->set_pixel(j, i, 0, rgb, 0);
                     break;
                 }
             }
@@ -77,11 +101,13 @@ void simpleRayTracing(
 }
 
 vector<flat*> createFlatArray(vector<vector<double>> &vertices,
-                              vector<vector<int>> &flats)
+                              vector<vector<int>> &flats,
+                              vector<vector<double>> &normals)
 {
     vector<flat*> elements(flats.size(), nullptr);
     for (int i = 0 ; i < flats.size() ; i++) {
         elements[i] = new flat(
+                i,
                 new point(vertices[flats[i][0]][0],
                           vertices[flats[i][0]][1],
                           vertices[flats[i][0]][2]),
@@ -92,45 +118,89 @@ vector<flat*> createFlatArray(vector<vector<double>> &vertices,
                           vertices[flats[i][2]][1],
                           vertices[flats[i][2]][2])
         );
+        vector<double> a = vertices[flats[i][0]];
+        vector<double> b = vertices[flats[i][1]];
+        vector<double> c = vertices[flats[i][2]];
+//        n[0]=(b[1]-a[1])*(c[2]-a[2])-(b[2]-a[2])*(c[1]-a[1]);
+//        n[1]=(c[0]-a[0])*(b[2]-a[2])-(b[0]-a[0])*(c[2]-a[2]);
+//        n[2]=(b[0]-a[0])*(c[1]-a[1])-(c[0]-a[0])*(b[1]-a[1]);
+        normals[i][0] = (b[1]-a[1])*(c[2]-a[2])-(b[2]-a[2])*(c[1]-a[1]);
+        normals[i][1] = (c[0]-a[0])*(b[2]-a[2])-(b[0]-a[0])*(c[2]-a[2]);
+        normals[i][2] = (b[0]-a[0])*(c[1]-a[1])-(c[0]-a[0])*(b[1]-a[1]);
     }
     return elements;
 }
 
 
-bool rayIntersectTriangle(
+//bool rayIntersectTriangle(
+//        vector<double> &rayOrigin,
+//        vector<double> &rayVector,
+//        flat* triangle
+//) {
+//    const double E = 0.0000001;
+//    vector<double> vertex0(3, 0);
+//    vector<double> vertex1(3, 0);
+//    vector<double> vertex2(3, 0);
+//
+//    for (int i = 0 ; i < 3 ; i++) {
+//        vertex0[i] = triangle->p1->coor[i];
+//        vertex1[i] = triangle->p2->coor[i];
+//        vertex2[i] = triangle->p3->coor[i];
+//    }
+//
+//    vector<double> edge1 = subtract(vertex1, vertex0);
+//    vector<double> edge2 = subtract(vertex2, vertex0);
+//    vector<double> dir = subtract(rayVector, rayOrigin);
+//
+//    vector<double> h = crossProduct(dir, edge2);
+//    double a = dotProduct(edge1, h);
+//    if (a > -E && a < E) return false;
+//
+//    double f = 1/a;
+//    vector<double> s = subtract(rayOrigin, vertex0);
+//    double u = f * dotProduct(s, h);
+//    if (u < 0 || u > 1) return false;
+//
+//    vector<double> q = crossProduct(s, edge1);
+//    double v = f * dotProduct(dir, q);
+//    if (v < 0 || u + v > 1) return false;
+//
+//    double t = f * dotProduct(edge2, q);
+//
+//    return abs(t) > E;
+//}
+
+double rayIntersectTriangle(
         vector<double> &rayOrigin,
         vector<double> &rayVector,
-        flat* triangle
+        vector<vector<double>>& vertexes,
+        vector<int>& flat
 ) {
     const double E = 0.0000001;
-    vector<double> vertex0(3, 0);
-    vector<double> vertex1(3, 0);
-    vector<double> vertex2(3, 0);
-
-    for (int i = 0 ; i < 3 ; i++) {
-        vertex0[i] = triangle->p1->coor[i];
-        vertex1[i] = triangle->p2->coor[i];
-        vertex2[i] = triangle->p3->coor[i];
-    }
+    vector<double> vertex0 = vertexes[flat[0]];
+    vector<double> vertex1 = vertexes[flat[1]];
+    vector<double> vertex2 = vertexes[flat[2]];
 
     vector<double> edge1 = subtract(vertex1, vertex0);
     vector<double> edge2 = subtract(vertex2, vertex0);
+
     vector<double> dir = subtract(rayVector, rayOrigin);
 
     vector<double> h = crossProduct(dir, edge2);
     double a = dotProduct(edge1, h);
-    if (a > -E && a < E) return false;
+    if (a > -E && a < E) return -1;
 
     double f = 1/a;
     vector<double> s = subtract(rayOrigin, vertex0);
     double u = f * dotProduct(s, h);
-    if (u < 0 || u > 1) return false;
+    if (u < 0 || u > 1) return -1;
 
     vector<double> q = crossProduct(s, edge1);
     double v = f * dotProduct(dir, q);
-    if (v < 0 || u + v > 1) return false;
+    if (v < 0 || u + v > 1) return -1;
 
     double t = f * dotProduct(edge2, q);
-
-    return abs(t) > E;
+    if (abs(t) > E) {
+        return t;
+    } else return -1;
 }
